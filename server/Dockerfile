@@ -1,0 +1,12 @@
+FROM rust:1.93.1-slim@sha256:9663b80a1621253d30b146454f903de48f0af925c967be48c84745537cd35d8b
+
+WORKDIR /usr/src/app
+
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+RUN cargo build || true
+
+COPY . .
+
+EXPOSE 8000
+CMD ["cargo", "run"]

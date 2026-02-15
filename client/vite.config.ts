@@ -1,15 +1,21 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import {
-  client_host,
-  client_port,
-} from './src/config/config.json'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  server: {
-    host: client_host,
-    port: client_port,
-  },
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd())
+
+  return {
+    plugins: [vue()],
+    server: {
+      host: true,
+      port: 3000,
+      proxy: {
+        '/server': {
+          target: `${env.VITE_SERVER_ORIGIN}`,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/server/, ''),
+        },
+      },
+    },
+  }
 })

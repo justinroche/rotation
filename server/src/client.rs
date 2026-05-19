@@ -1,11 +1,34 @@
 use std::collections::HashMap;
 
 use axum::{Json, http::StatusCode, response::IntoResponse};
-use reqwest::Client;
-use serde_json::Value;
-use serde_json::json;
+use once_cell::sync::OnceCell;
+use reqwest::{
+    Client,
+    header::{HeaderMap, HeaderValue, USER_AGENT},
+};
+use serde_json::{Value, json};
 
 use crate::config;
+
+static CLIENT: OnceCell<Client> = OnceCell::new();
+
+/// Initialize the global client.
+pub fn init() -> &'static Client {
+    let mut headers: HeaderMap = HeaderMap::new();
+    headers.insert(USER_AGENT, HeaderValue::from_static(config::USER_AGENT));
+
+    CLIENT.get_or_init(|| {
+        Client::builder()
+            .default_headers(headers)
+            .build()
+            .expect("Failed to build HTTP client")
+    })
+}
+
+/// Get a ref to the global client.
+fn get() -> &'static Client {
+    CLIENT.get().expect("HTTP client not initialized.")
+}
 
 pub async fn fetch_similar_artists(artist: String) -> Result<impl IntoResponse, StatusCode> {
     let config::Config { lastfm_api_key, .. } = config::get();
@@ -18,7 +41,7 @@ pub async fn fetch_similar_artists(artist: String) -> Result<impl IntoResponse, 
         ("limit", "20"),
     ]);
 
-    let response = Client::new()
+    let response = get()
         .get("https://ws.audioscrobbler.com/2.0/")
         .query(&params)
         .send()

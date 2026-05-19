@@ -6,6 +6,7 @@ mod router;
 #[tokio::main]
 async fn main() {
     let config::Config { addr, .. } = config::init();
+    client::init();
 
     let app = router::init();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

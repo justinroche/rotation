@@ -1,6 +1,15 @@
 use once_cell::sync::OnceCell;
 use std::{env, net::SocketAddr};
 
+pub const USER_AGENT: &str = concat!(
+    env!("CARGO_PKG_NAME"),
+    "/",
+    env!("CARGO_PKG_VERSION"),
+    " (",
+    env!("CARGO_PKG_HOMEPAGE"),
+    ")"
+);
+
 #[derive(Debug)]
 pub struct Config {
     pub addr: SocketAddr,
@@ -9,7 +18,7 @@ pub struct Config {
 
 static CONFIG: OnceCell<Config> = OnceCell::new();
 
-/// Initialize the global config. Call once from main.
+/// Initialize the global config.
 pub fn init() -> &'static Config {
     dotenvy::dotenv().ok();
 
@@ -21,19 +30,13 @@ pub fn init() -> &'static Config {
     let lastfm_api_key =
         env::var("LASTFM_API_KEY").expect("LASTFM_API_KEY environment variable is missing");
 
-    CONFIG
-        .set(Config {
-            addr,
-            lastfm_api_key,
-        })
-        .expect("Config already initialized");
-
-    CONFIG.get().unwrap()
+    CONFIG.get_or_init(|| Config {
+        addr,
+        lastfm_api_key,
+    })
 }
 
-/// Get a reference to the global config. Panics if `init()` wasn't called.
+/// Get a ref to the global config.
 pub fn get() -> &'static Config {
-    CONFIG
-        .get()
-        .expect("Config not initialized. Call config::init() in main.")
+    CONFIG.get().expect("Config not initialized.")
 }

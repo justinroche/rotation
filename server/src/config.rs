@@ -10,6 +10,8 @@ pub const USER_AGENT: &str = concat!(
     ")"
 );
 
+pub const LASTFM_URL: &str = "https://ws.audioscrobbler.com/2.0/";
+
 #[derive(Debug)]
 pub struct Config {
     pub addr: SocketAddr,

@@ -1,12 +1,21 @@
 use axum::{Json, extract::Query, http::StatusCode, response::IntoResponse};
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{Value, json};
 
-use crate::client;
+use crate::lastfm;
 
 #[derive(Deserialize)]
-pub struct SimilarArtistParams {
-    artist: String,
+pub struct ArtistMetadataParams {
+    artist_name: String,
+}
+
+#[derive(Deserialize)]
+pub struct ArtistFetchParams {
+    artist_mbid: String,
+}
+
+fn ok_json(data: Value) -> impl IntoResponse {
+    Json(json!({ "status": "ok", "data": data }))
 }
 
 pub async fn health_check() -> impl IntoResponse {
@@ -15,8 +24,26 @@ pub async fn health_check() -> impl IntoResponse {
     }))
 }
 
-pub async fn fetch_similar_artists(
-    Query(params): Query<SimilarArtistParams>,
+pub async fn fetch_metadata(
+    Query(params): Query<ArtistMetadataParams>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    client::fetch_similar_artists(params.artist).await
+    lastfm::fetch_metadata(params.artist_name)
+        .await
+        .map(ok_json)
+}
+
+pub async fn fetch_similar_artists(
+    Query(params): Query<ArtistFetchParams>,
+) -> Result<impl IntoResponse, StatusCode> {
+    lastfm::fetch_similar_artists(params.artist_mbid)
+        .await
+        .map(ok_json)
+}
+
+pub async fn fetch_top_albums(
+    Query(params): Query<ArtistFetchParams>,
+) -> Result<impl IntoResponse, StatusCode> {
+    lastfm::fetch_top_albums(params.artist_mbid)
+        .await
+        .map(ok_json)
 }

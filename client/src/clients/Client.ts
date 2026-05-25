@@ -6,8 +6,16 @@ const checkServerConnection = async () => {
   return response
 }
 
-const fetchSimilarArtists = async (artist: string) => {
-  return await fetch(`/server/similar_artists?artist=${artist}`)
+const fetchArtistMetadata = async (artist_name: string) => {
+  return await fetch(`/server/artist/metadata?artist=${artist_name}`)
+}
+
+const fetchSimilarArtists = async (artist_mbid: string) => {
+  return await fetch(`/server/artist/similar?artist=${artist_mbid}`)
+}
+
+const fetchArtistAlbums = async (artist_mbid: string) => {
+  return await fetch(`/server/artist/albums?artist=${artist_mbid}`)
 }
 
 export default { checkServerConnection, fetchSimilarArtists }

@@ -1,12 +1,13 @@
-mod client;
 mod config;
 mod handlers;
+mod http;
+mod lastfm;
 mod router;
 
 #[tokio::main]
 async fn main() {
     let config::Config { addr, .. } = config::init();
-    client::init();
+    http::init();
 
     let app = router::init();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
